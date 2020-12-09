@@ -152,8 +152,8 @@ namespace AssimpSample
             // Model sencenja na flat (konstantno)
             gl.ShadeModel(OpenGL.GL_FLAT);
             // default je CCW
-            gl.Enable(OpenGL.GL_CULL_FACE);
             gl.Enable(OpenGL.GL_DEPTH_TEST);
+            //gl.Enable(OpenGL.GL_CULL_FACE);
             //gl.PolygonMode(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_LINE);
 
             sceneCastle.LoadScene();
@@ -185,8 +185,12 @@ namespace AssimpSample
             DrawPath(gl);
             gl.PopMatrix();
 
+            gl.PushMatrix();
+            DrawWalls(gl);
+            gl.PopMatrix();
+
             sceneCastle.Draw();
-            sceneArrow.Draw();
+            //sceneArrow.Draw();
             gl.PopMatrix();
             // Oznaci kraj iscrtavanja
             gl.Flush();
@@ -222,6 +226,29 @@ namespace AssimpSample
             gl.LoadIdentity();
             gl.MatrixMode(OpenGL.GL_MODELVIEW);
         }
+
+        private void DrawWalls(OpenGL gl)
+        {
+            gl.PushMatrix();
+            gl.Color(0.5f, 0.7f, 0.5f);
+            gl.Translate(-50.0f, 0.0f, 0.0f);
+            gl.Scale(0.1, 20, 50);
+            gl.Translate(-1, 1, 0);
+            Cube leftWall = new Cube();
+            leftWall.Render(gl, SharpGL.SceneGraph.Core.RenderMode.Render);
+            gl.PopMatrix();
+
+            gl.PushMatrix();
+            gl.Translate(50.0f, 0.0f, 0.0f);
+            gl.Scale(0.1, 20, 50);
+            gl.Translate(-1, 1, 0);
+            Cube rightWall = new Cube();
+            rightWall.Render(gl, SharpGL.SceneGraph.Core.RenderMode.Render);
+            gl.PopMatrix();
+
+
+        }
+
 
 
         /// <summary>
