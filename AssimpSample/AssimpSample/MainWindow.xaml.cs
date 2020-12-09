@@ -94,8 +94,8 @@ namespace AssimpSample
                 case Key.S: m_world.RotationX += 5.0f; break;
                 case Key.A: m_world.RotationY -= 5.0f; break;
                 case Key.D: m_world.RotationY += 5.0f; break;
-                case Key.Add: m_world.SceneDistance -= 200.0f; break;
-                case Key.Subtract: m_world.SceneDistance += 200.0f; break;
+                case Key.Add: m_world.SceneDistance -= 50.0f; break;
+                case Key.Subtract: m_world.SceneDistance += 50.0f; break;
                 case Key.F2:
                     OpenFileDialog opfModel = new OpenFileDialog();
                     bool result = (bool) opfModel.ShowDialog();

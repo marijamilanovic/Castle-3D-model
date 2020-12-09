@@ -28,7 +28,7 @@ namespace AssimpSample
         /// <summary>
         ///	 Scena koja se prikazuje.
         /// </summary>
-        private Assimp.Scene sceneCastle;
+        private Assimp.Scene m_scene;
 
         /// <summary>
         ///	 OpenGL referenca koju dobijamo iz aplikacije
@@ -66,8 +66,8 @@ namespace AssimpSample
         /// </summary>
         public Assimp.Scene Scene
         {
-            get { return sceneCastle; }
-            private set { sceneCastle = value; }
+            get { return m_scene; }
+            private set { m_scene = value; }
         }
 
         #endregion
@@ -122,7 +122,7 @@ namespace AssimpSample
             importer.AttachLogStream(logstream);
 
             // Ucitavanje podataka o sceni iz odgovarajuceg fajla.
-            sceneCastle = importer.ImportFile(Path.Combine(m_scenePath, m_sceneFileName));
+            m_scene = importer.ImportFile(Path.Combine(m_scenePath, m_sceneFileName));
 
             // Oslobadjanje resursa koriscenih za ucitavanje podataka o sceni.
             importer.Dispose();
@@ -137,7 +137,7 @@ namespace AssimpSample
             lista.Generate(gl);
             lista.New(gl, DisplayList.DisplayListMode.Compile);
             gl.Color(0.3f, 0.3f, 0.3f);
-            RenderNode(sceneCastle.RootNode);
+            RenderNode(m_scene.RootNode);
             lista.End(gl);
         }
 
@@ -159,7 +159,7 @@ namespace AssimpSample
             {
                 foreach (int meshIndex in node.MeshIndices)
                 {
-                    Mesh mesh = sceneCastle.Meshes[meshIndex];
+                    Mesh mesh = m_scene.Meshes[meshIndex];
                     y++;
                     bool hasColors = mesh.HasVertexColors(0);
                     uint brojPoli = mesh.Faces[0].IndexCount;

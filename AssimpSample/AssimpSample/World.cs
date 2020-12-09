@@ -27,24 +27,15 @@ namespace AssimpSample
         #region Atributi
 
         /// <summary>
-        ///	 Ugao rotacije Meseca
-        /// </summary>
-        private float m_moonRotation = 0.0f;
-
-        /// <summary>
-        ///	 Ugao rotacije Zemlje
-        /// </summary>
-        private float m_earthRotation = 0.0f;
-
-        /// <summary>
         ///	 Scena koja se prikazuje.
         /// </summary>
-        private AssimpScene m_scene;
+        private AssimpScene sceneCastle;
+        private AssimpScene sceneArrow;
 
         /// <summary>
         ///	 Ugao rotacije sveta oko X ose.
         /// </summary>
-        private float m_xRotation = 0.0f;
+        private float m_xRotation = 10.0f;
 
         /// <summary>
         ///	 Ugao rotacije sveta oko Y ose.
@@ -75,8 +66,8 @@ namespace AssimpSample
         /// </summary>
         public AssimpScene Scene
         {
-            get { return m_scene; }
-            set { m_scene = value; }
+            get { return sceneCastle; }
+            set { sceneCastle = value; }
         }
 
         /// <summary>
@@ -133,7 +124,8 @@ namespace AssimpSample
         /// </summary>
         public World(String scenePath, String sceneFileName, int width, int height, OpenGL gl)
         {
-            this.m_scene = new AssimpScene(scenePath, sceneFileName, gl);
+            this.sceneCastle = new AssimpScene(scenePath, sceneFileName, gl);
+            this.sceneArrow = new AssimpScene(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "3D Models\\Arrow"), "Ballista_Anim.obj", gl);
             this.m_width = width;
             this.m_height = height;
         }
@@ -160,8 +152,10 @@ namespace AssimpSample
             // Model sencenja na flat (konstantno)
             gl.ShadeModel(OpenGL.GL_FLAT);
             gl.Enable(OpenGL.GL_DEPTH_TEST);
-            m_scene.LoadScene();
-            m_scene.Initialize();
+            sceneCastle.LoadScene();
+            sceneCastle.Initialize();
+            sceneArrow.LoadScene();
+            sceneArrow.Initialize();
         }
 
         /// <summary>
@@ -176,7 +170,8 @@ namespace AssimpSample
             gl.Rotate(m_xRotation, 1.0f, 0.0f, 0.0f);
             gl.Rotate(m_yRotation, 0.0f, 1.0f, 0.0f);
 
-            m_scene.Draw();
+            sceneCastle.Draw();
+            sceneArrow.Draw();
             gl.PopMatrix();
             // Oznaci kraj iscrtavanja
             gl.Flush();
@@ -192,7 +187,6 @@ namespace AssimpSample
             m_height = height;
             gl.MatrixMode(OpenGL.GL_PROJECTION);      // selektuj Projection Matrix
             gl.LoadIdentity();
-            //gl.Perspective(45f, (double)width / height, 0.1f, 20000f);
             gl.Perspective(60f, (double)width / height, 1f, 20000f);
             gl.MatrixMode(OpenGL.GL_MODELVIEW);
             gl.LoadIdentity();                // resetuj ModelView Matrix
@@ -205,7 +199,7 @@ namespace AssimpSample
         {
             if (disposing)
             {
-                m_scene.Dispose();
+                sceneCastle.Dispose();
             }
         }
 
