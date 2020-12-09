@@ -85,6 +85,7 @@ namespace AssimpSample
             m_world.Resize(args.OpenGL, (int)openGLControl.ActualWidth, (int)openGLControl.ActualHeight);
         }
 
+
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             switch (e.Key)

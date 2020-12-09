@@ -151,7 +151,11 @@ namespace AssimpSample
             gl.Color(1f, 0f, 0f);
             // Model sencenja na flat (konstantno)
             gl.ShadeModel(OpenGL.GL_FLAT);
+            // default je CCW
+            gl.Enable(OpenGL.GL_CULL_FACE);
             gl.Enable(OpenGL.GL_DEPTH_TEST);
+            //gl.PolygonMode(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_LINE);
+
             sceneCastle.LoadScene();
             sceneCastle.Initialize();
             sceneArrow.LoadScene();
@@ -163,6 +167,7 @@ namespace AssimpSample
         /// </summary>
         public void Draw(OpenGL gl)
         {
+            // Ocisti sadrzaj kolor bafera i bafera dubine
             gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
 
             gl.PushMatrix();
@@ -170,11 +175,30 @@ namespace AssimpSample
             gl.Rotate(m_xRotation, 1.0f, 0.0f, 0.0f);
             gl.Rotate(m_yRotation, 0.0f, 1.0f, 0.0f);
 
+            gl.PushMatrix();
+            DrawFloor(gl);
+            gl.PopMatrix();
             sceneCastle.Draw();
             sceneArrow.Draw();
             gl.PopMatrix();
             // Oznaci kraj iscrtavanja
             gl.Flush();
+        }
+
+
+        private void DrawFloor(OpenGL gl)
+        {
+            gl.Begin(OpenGL.GL_QUADS);
+            gl.Color(0.1f, 0.3f, 0.1f);
+        
+            gl.Vertex(-50f, 0f, 50f);
+            gl.Vertex(50f, 0f, 50f);
+            gl.Vertex(50f, 0f, -50f);
+            gl.Vertex(-50f, 0f, -50f);
+
+            gl.End();
+            gl.LoadIdentity();
+            gl.MatrixMode(OpenGL.GL_MODELVIEW);
         }
 
 
@@ -185,6 +209,7 @@ namespace AssimpSample
         {
             m_width = width;
             m_height = height;
+            //gl.Viewport(0, 0, m_width, m_height);
             gl.MatrixMode(OpenGL.GL_PROJECTION);      // selektuj Projection Matrix
             gl.LoadIdentity();
             gl.Perspective(60f, (double)width / height, 1f, 20000f);
