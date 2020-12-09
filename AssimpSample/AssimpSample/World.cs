@@ -176,8 +176,15 @@ namespace AssimpSample
             gl.Rotate(m_yRotation, 0.0f, 1.0f, 0.0f);
 
             gl.PushMatrix();
+            gl.Translate(0.0f, 0.0f, 0.0f);
             DrawFloor(gl);
             gl.PopMatrix();
+
+            gl.PushMatrix();
+            gl.Translate(0.0f, 0.1f, 0.0f);
+            DrawPath(gl);
+            gl.PopMatrix();
+
             sceneCastle.Draw();
             sceneArrow.Draw();
             gl.PopMatrix();
@@ -195,6 +202,21 @@ namespace AssimpSample
             gl.Vertex(50f, 0f, 50f);
             gl.Vertex(50f, 0f, -50f);
             gl.Vertex(-50f, 0f, -50f);
+
+            gl.End();
+            gl.LoadIdentity();      
+            gl.MatrixMode(OpenGL.GL_MODELVIEW);
+        }
+
+        private void DrawPath(OpenGL gl)
+        {
+            gl.Begin(OpenGL.GL_QUADS);
+            gl.Color(0.1f, 0.1f, 0.1f);
+
+            gl.Vertex(-5f, 0f, 50f);
+            gl.Vertex(5f, 0f, 50f);
+            gl.Vertex(5f, 0f, 20f);
+            gl.Vertex(-5f, 0f, 20f);
 
             gl.End();
             gl.LoadIdentity();
