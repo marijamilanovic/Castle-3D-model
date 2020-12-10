@@ -201,7 +201,12 @@ namespace AssimpSample
             sceneArrow.Draw();
             gl.PopMatrix();
 
-            //DrawText(gl);
+            gl.PushMatrix();
+            //gl.Scale(100, 100, 100);
+            DrawTextInfo(gl);
+            gl.PopMatrix();
+
+            gl.MatrixMode(OpenGL.GL_MODELVIEW);
 
             gl.PopMatrix();
             // Oznaci kraj iscrtavanja
@@ -259,12 +264,45 @@ namespace AssimpSample
             gl.PopMatrix();
         }
 
-        private void DrawText(OpenGL gl)
+        private void DrawTextInfo(OpenGL gl)
         {
             gl.MatrixMode(OpenGL.GL_PROJECTION);
+            gl.PushMatrix();
+            gl.Viewport(m_width/2, 0, m_width/2, m_height/2);
             gl.LoadIdentity();
-            gl.Ortho2D(-2.0, 2.0f, -2.0f, 2.0f);
-            gl.DrawText3D("Arial", 25f, 1f, 0.1f, "teapot");
+
+            gl.Ortho2D(-10.0f, 20.0f, -10.0f, 10.0f);
+            gl.MatrixMode(OpenGL.GL_MODELVIEW);
+            gl.LoadIdentity();
+            gl.Color(1f, 0.0f, 0.0f);
+
+            gl.PushMatrix();
+            gl.DrawText3D("Verdana", 14, 0.0f, 0, "Predmet: Racunarska grafika");
+            gl.PopMatrix();
+
+            gl.PushMatrix();
+            gl.Translate(0.0f, -1.0f, 0.0f);
+            gl.DrawText3D("Verdana", 14, 0.0f, 0, "Sk.god: 2020/21.");
+            gl.PopMatrix();
+
+            gl.PushMatrix();
+            gl.Translate(0.0f, -2.0f, 0.0f);
+            gl.DrawText3D("Verdana", 14, 0.0f, 0, "Ime: Marija");
+            gl.PopMatrix();
+
+            gl.PushMatrix();
+            gl.Translate(0.0f, -3.0f, 0.0f);
+            gl.DrawText3D("Verdana", 14, 0.0f, 0, "Prezime: Milanovic");
+            gl.PopMatrix();
+
+            gl.PushMatrix();
+            gl.Translate(0.0f, -4.0f, 0.0f);
+            gl.DrawText3D("Verdana", 14, 0.0f, 0, "Sifra zad: PF1S3.2.");
+            gl.PopMatrix();
+
+            gl.MatrixMode(OpenGL.GL_PROJECTION);
+            gl.Viewport(0, 0, m_width, m_height);
+            gl.PopMatrix();
             gl.MatrixMode(OpenGL.GL_MODELVIEW);
 
         }
