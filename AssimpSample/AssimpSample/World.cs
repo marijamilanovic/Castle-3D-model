@@ -190,7 +190,13 @@ namespace AssimpSample
             gl.PopMatrix();
 
             sceneCastle.Draw();
-            //sceneArrow.Draw();
+
+            gl.PushMatrix();
+            gl.Translate(-40.0f, 0.5f, 40.0f);
+            gl.Scale(0.3, 0.3, -0.3);
+            sceneArrow.Draw();
+            gl.PopMatrix();
+
             gl.PopMatrix();
             // Oznaci kraj iscrtavanja
             gl.Flush();
@@ -258,7 +264,7 @@ namespace AssimpSample
         {
             m_width = width;
             m_height = height;
-            //gl.Viewport(0, 0, m_width, m_height);
+            gl.Viewport(0, 0, m_width, m_height);
             gl.MatrixMode(OpenGL.GL_PROJECTION);      // selektuj Projection Matrix
             gl.LoadIdentity();
             gl.Perspective(60f, (double)width / height, 1f, 20000f);
