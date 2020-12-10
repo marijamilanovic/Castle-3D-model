@@ -153,7 +153,7 @@ namespace AssimpSample
             gl.ShadeModel(OpenGL.GL_FLAT);
             // default je CCW
             gl.Enable(OpenGL.GL_DEPTH_TEST);
-            //gl.Enable(OpenGL.GL_CULL_FACE);
+            gl.Enable(OpenGL.GL_CULL_FACE);
             //gl.PolygonMode(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_LINE);
 
             sceneCastle.LoadScene();
@@ -176,12 +176,12 @@ namespace AssimpSample
             gl.Rotate(m_yRotation, 0.0f, 1.0f, 0.0f);
 
             gl.PushMatrix();
-            gl.Translate(0.0f, 0.0f, 0.0f);
+            gl.Translate(0.0f, 0.2f, 0.0f);
             DrawFloor(gl);
             gl.PopMatrix();
 
             gl.PushMatrix();
-            gl.Translate(0.0f, 0.1f, 0.0f);
+            gl.Translate(0.0f, 0.3f, 0.0f);
             DrawPath(gl);
             gl.PopMatrix();
 
@@ -189,13 +189,19 @@ namespace AssimpSample
             DrawWalls(gl);
             gl.PopMatrix();
 
+            gl.PushMatrix();
+            gl.Translate(0.0f, 0.3f, 0.0f);
             sceneCastle.Draw();
+            gl.PopMatrix();
+
 
             gl.PushMatrix();
             gl.Translate(-40.0f, 0.5f, 40.0f);
             gl.Scale(0.3, 0.3, -0.3);
             sceneArrow.Draw();
             gl.PopMatrix();
+
+            //DrawText(gl);
 
             gl.PopMatrix();
             // Oznaci kraj iscrtavanja
@@ -251,7 +257,15 @@ namespace AssimpSample
             Cube rightWall = new Cube();
             rightWall.Render(gl, SharpGL.SceneGraph.Core.RenderMode.Render);
             gl.PopMatrix();
+        }
 
+        private void DrawText(OpenGL gl)
+        {
+            gl.MatrixMode(OpenGL.GL_PROJECTION);
+            gl.LoadIdentity();
+            gl.Ortho2D(-2.0, 2.0f, -2.0f, 2.0f);
+            gl.DrawText3D("Arial", 25f, 1f, 0.1f, "teapot");
+            gl.MatrixMode(OpenGL.GL_MODELVIEW);
 
         }
 
