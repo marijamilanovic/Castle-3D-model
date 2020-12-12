@@ -131,7 +131,7 @@ namespace AssimpSample
         /// <summary>
         ///  Inicijalizacija i podesavanje OpenGL parametara.
         /// </summary>
-        public void Initialize()
+        public void Initialize()                // sve smestili u Display Listu zato sto da daje najbolje performanse -- objekti su staticni pa zato
         { 
             lista = new DisplayList();
             lista.Generate(gl);
@@ -152,7 +152,7 @@ namespace AssimpSample
             
             // Primena tranformacija, definisanih za dati cvor.
             float[] matrix = new float[16] { node.Transform.A1, node.Transform.B1, node.Transform.C1, node.Transform.D1, node.Transform.A2, node.Transform.B2, node.Transform.C2, node.Transform.D2, node.Transform.A3, node.Transform.B3, node.Transform.C3, node.Transform.D3, node.Transform.A4, node.Transform.B4, node.Transform.C4, node.Transform.D4 };
-            gl.MultMatrix(matrix);
+            gl.MultMatrix(matrix);          //kreira matricu transformacija i postaviti na matricni stek MODEL VIEW
             x++;
             // Iscrtavanje objekata u sceni koji su reprezentovani datim cvorom.
             if (node.HasMeshes)
@@ -178,7 +178,7 @@ namespace AssimpSample
                                 gl.Begin(OpenGL.GL_LINES);
                                 break;
                             case 3:
-                                gl.Begin(OpenGL.GL_TRIANGLES);
+                                gl.Begin(OpenGL.GL_TRIANGLES);          //obicno se radi triangulacija
                                 break;
                             default:
                                 gl.Begin(OpenGL.GL_POLYGON);

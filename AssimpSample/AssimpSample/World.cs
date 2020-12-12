@@ -151,7 +151,6 @@ namespace AssimpSample
             gl.Color(1f, 0f, 0f);
             // Model sencenja na flat (konstantno)
             gl.ShadeModel(OpenGL.GL_FLAT);
-            // default je CCW
             gl.Enable(OpenGL.GL_DEPTH_TEST);
             gl.Enable(OpenGL.GL_CULL_FACE);
             //gl.PolygonMode(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_LINE);
@@ -206,7 +205,7 @@ namespace AssimpSample
             DrawTextInfo(gl);
             gl.PopMatrix();
 
-            gl.MatrixMode(OpenGL.GL_MODELVIEW);
+            gl.MatrixMode(OpenGL.GL_MODELVIEW);         
 
             gl.PopMatrix();
             // Oznaci kraj iscrtavanja
@@ -226,7 +225,6 @@ namespace AssimpSample
 
             gl.End();
             gl.LoadIdentity();      
-            gl.MatrixMode(OpenGL.GL_MODELVIEW);
         }
 
         private void DrawPath(OpenGL gl)
@@ -241,7 +239,6 @@ namespace AssimpSample
 
             gl.End();
             gl.LoadIdentity();
-            gl.MatrixMode(OpenGL.GL_MODELVIEW);
         }
 
         private void DrawWalls(OpenGL gl)
@@ -264,6 +261,9 @@ namespace AssimpSample
             gl.PopMatrix();
         }
 
+        // ORTOGONALNA PROJEKCIJA - svi objekti koji su istih dimenzija prikazuju se u istoj velicini bez obzira gde se nalaze --- gluOrtho()
+        // PROJEKCIJA U PERSPEKTIVI - objekti koji su dalje od posmatraca su sve manji i tako --- gluPerspetive()
+
         private void DrawTextInfo(OpenGL gl)
         {
             gl.MatrixMode(OpenGL.GL_PROJECTION);
@@ -271,33 +271,33 @@ namespace AssimpSample
             gl.Viewport(m_width/2, 0, m_width/2, m_height/2);
             gl.LoadIdentity();
 
-            gl.Ortho2D(-10.0f, 20.0f, -10.0f, 10.0f);
+            gl.Ortho2D(-10.0f, 20.0f, -10.0f, 10.0f);       //near = 1 i far = -1
             gl.MatrixMode(OpenGL.GL_MODELVIEW);
-            gl.LoadIdentity();
+            gl.LoadIdentity();    
             gl.Color(1f, 0.0f, 0.0f);
 
             gl.PushMatrix();
-            gl.DrawText3D("Verdana", 14, 0.0f, 0, "Predmet: Racunarska grafika");
+            gl.DrawText3D("Verdana bold", 14, 0.0f, 0, "Predmet: Racunarska grafika");
             gl.PopMatrix();
 
             gl.PushMatrix();
             gl.Translate(0.0f, -1.0f, 0.0f);
-            gl.DrawText3D("Verdana", 14, 0.0f, 0, "Sk.god: 2020/21.");
+            gl.DrawText3D("Verdana bold", 14, 0.0f, 0, "Sk.god: 2020/21.");
             gl.PopMatrix();
 
             gl.PushMatrix();
             gl.Translate(0.0f, -2.0f, 0.0f);
-            gl.DrawText3D("Verdana", 14, 0.0f, 0, "Ime: Marija");
+            gl.DrawText3D("Verdana bold", 14, 0.0f, 0, "Ime: Marija");
             gl.PopMatrix();
 
             gl.PushMatrix();
             gl.Translate(0.0f, -3.0f, 0.0f);
-            gl.DrawText3D("Verdana", 14, 0.0f, 0, "Prezime: Milanovic");
+            gl.DrawText3D("Verdana bold", 14, 0.0f, 0, "Prezime: Milanovic");
             gl.PopMatrix();
 
             gl.PushMatrix();
             gl.Translate(0.0f, -4.0f, 0.0f);
-            gl.DrawText3D("Verdana", 14, 0.0f, 0, "Sifra zad: PF1S3.2.");
+            gl.DrawText3D("Verdana bold", 14, 0.0f, 0, "Sifra zad: PF1S3.2.");
             gl.PopMatrix();
 
             gl.MatrixMode(OpenGL.GL_PROJECTION);
@@ -312,12 +312,12 @@ namespace AssimpSample
         /// <summary>
         /// Podesava viewport i projekciju za OpenGL kontrolu.
         /// </summary>
-        public void Resize(OpenGL gl, int width, int height)
+        public void Resize(OpenGL gl, int width, int height)            //definise skaliranje prozora pri promeni velicine prozora od strane klijenta
         {
             m_width = width;
             m_height = height;
-            gl.Viewport(0, 0, m_width, m_height);
-            gl.MatrixMode(OpenGL.GL_PROJECTION);      // selektuj Projection Matrix
+            gl.Viewport(0, 0, m_width, m_height);                       // definise mapiranje log.koordinata u fizicke koordinate
+            gl.MatrixMode(OpenGL.GL_PROJECTION);                        // selektuj Projection Matrix
             gl.LoadIdentity();
             gl.Perspective(60f, (double)width / height, 1f, 20000f);
             gl.MatrixMode(OpenGL.GL_MODELVIEW);
