@@ -153,6 +153,10 @@ namespace AssimpSample
             gl.ShadeModel(OpenGL.GL_FLAT);
             gl.Enable(OpenGL.GL_DEPTH_TEST);
             gl.Enable(OpenGL.GL_CULL_FACE);
+
+            gl.Enable(OpenGL.GL_COLOR_MATERIAL);
+            gl.ColorMaterial(OpenGL.GL_FRONT, OpenGL.GL_AMBIENT_AND_DIFFUSE);       // != glMaterial(), bolji jer olaksava def. materijala
+                                                                                    // na nivou verteksa
             //gl.PolygonMode(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_LINE);
 
             sceneCastle.LoadScene();
