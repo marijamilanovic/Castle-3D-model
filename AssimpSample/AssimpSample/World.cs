@@ -154,6 +154,8 @@ namespace AssimpSample
             gl.Enable(OpenGL.GL_DEPTH_TEST);
             gl.Enable(OpenGL.GL_CULL_FACE);
 
+            gl.Enable(OpenGL.GL_NORMALIZE);                                         // normalizacija
+
             gl.Enable(OpenGL.GL_COLOR_MATERIAL);
             gl.ColorMaterial(OpenGL.GL_FRONT, OpenGL.GL_AMBIENT_AND_DIFFUSE);       // != glMaterial(), bolji jer olaksava def. materijala
                                                                                     // na nivou verteksa
@@ -221,7 +223,8 @@ namespace AssimpSample
         {
             gl.Begin(OpenGL.GL_QUADS);
             gl.Color(0.1f, 0.3f, 0.1f);
-        
+            gl.Normal(0f, 1f, 0f);                                  // normala za podlogu
+
             gl.Vertex(-50f, 0f, 50f);
             gl.Vertex(50f, 0f, 50f);
             gl.Vertex(50f, 0f, -50f);
@@ -235,6 +238,7 @@ namespace AssimpSample
         {
             gl.Begin(OpenGL.GL_QUADS);
             gl.Color(0.1f, 0.1f, 0.1f);
+            gl.Normal(0f, 1f, 0f);                                  // normala za stazu
 
             gl.Vertex(-5f, 0f, 50f);
             gl.Vertex(5f, 0f, 50f);
