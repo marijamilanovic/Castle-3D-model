@@ -76,7 +76,7 @@ namespace AssimpSample
         public float RotationX
         {
             get { return m_xRotation; }
-            set { m_xRotation = value; }
+            set { m_xRotation = value; if (m_xRotation < 4) m_xRotation = 4; if (m_xRotation > 60) m_xRotation = 60; }
         }
 
         /// <summary>
@@ -156,9 +156,10 @@ namespace AssimpSample
 
             gl.Enable(OpenGL.GL_NORMALIZE);                                         // normalizacija
 
-            gl.Enable(OpenGL.GL_COLOR_MATERIAL);
+           
             gl.ColorMaterial(OpenGL.GL_FRONT, OpenGL.GL_AMBIENT_AND_DIFFUSE);       // != glMaterial(), bolji jer olaksava def. materijala
                                                                                     // na nivou verteksa
+            gl.Enable(OpenGL.GL_COLOR_MATERIAL);
             //gl.PolygonMode(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_LINE);
 
             sceneCastle.LoadScene();
