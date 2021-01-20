@@ -57,6 +57,8 @@ namespace AssimpSample
         /// </summary>
         private int m_height;
 
+        private float sceneDistance1 = 100.0f;
+
         #endregion Atributi
 
         #region Properties
@@ -114,6 +116,8 @@ namespace AssimpSample
             get { return m_height; }
             set { m_height = value; }
         }
+
+        public float SceneDistance1 { get => sceneDistance1; set => sceneDistance1 = value; }
 
         #endregion Properties
 
@@ -174,12 +178,11 @@ namespace AssimpSample
             // Ocisti sadrzaj kolor bafera i bafera dubine
             gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
 
-            //gl.MatrixMode(OpenGL.GL_MODELVIEW);
-            //gl.PushMatrix();
+            gl.MatrixMode(OpenGL.GL_PROJECTION);
             gl.LoadIdentity();
-            gl.LookAt(0, 50, 100, 0, 0, 0, 0, 1, 0); 
-            gl.Rotate(m_xRotation, 1.0f, 0.0f, 0.0f);
-            gl.Rotate(m_yRotation, 0.0f, 1.0f, 0.0f);
+            gl.Perspective(60, (double)m_width / (double)m_height, 1, 20000.0);
+            gl.LookAt(0f, 30f, 100f, 0f, 0f, 0, 0f, 1f, 0f);
+            gl.MatrixMode(OpenGL.GL_MODELVIEW);
 
             gl.PushMatrix();
             gl.Translate(0.0f, 0.0f, -m_sceneDistance);
@@ -216,11 +219,24 @@ namespace AssimpSample
             DrawTextInfo(gl);
             gl.PopMatrix();
 
-            //gl.MatrixMode(OpenGL.GL_MODELVIEW);
-
             gl.PopMatrix();
             // Oznaci kraj iscrtavanja
             gl.Flush();
+        }
+
+
+        private void SetupLighting(OpenGL gl)
+        { //(2.2, 2.9)
+            gl.Enable(OpenGL.GL_LIGHTING);
+            gl.Enable(OpenGL.GL_LIGHT0);
+
+            float[] light_yellow = new float[] { 1f, 1f, 0.7f };
+            float[] yellow = new float[] { 1f, 1f, 0f };
+
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPOT_CUTOFF, 180.0f);//SVETLO 0 TACKASTI STAVIONARNI IZVOR (2.2)
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_AMBIENT, light_yellow);
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_DIFFUSE, light_yellow);
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPECULAR, light_yellow);
         }
 
 
