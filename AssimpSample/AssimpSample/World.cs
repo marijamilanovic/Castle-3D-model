@@ -35,7 +35,7 @@ namespace AssimpSample
         /// <summary>
         ///	 Ugao rotacije sveta oko X ose.
         /// </summary>
-        private float m_xRotation = 10.0f;
+        private float m_xRotation = 0.0f;
 
         /// <summary>
         ///	 Ugao rotacije sveta oko Y ose.
@@ -45,7 +45,7 @@ namespace AssimpSample
         /// <summary>
         ///	 Udaljenost scene od kamere.
         /// </summary>
-        private float m_sceneDistance = 100.0f;
+        private float m_sceneDistance = 0.0f;
 
         /// <summary>
         ///	 Sirina OpenGL kontrole u pikselima.
@@ -150,16 +150,14 @@ namespace AssimpSample
             gl.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             gl.Color(1f, 0f, 0f);
             // Model sencenja na flat (konstantno)
-            gl.ShadeModel(OpenGL.GL_FLAT);
+            gl.ShadeModel(OpenGL.GL_SMOOTH);
             gl.Enable(OpenGL.GL_DEPTH_TEST);
             gl.Enable(OpenGL.GL_CULL_FACE);
 
             gl.Enable(OpenGL.GL_NORMALIZE);                                         // normalizacija
-
-           
+            gl.Enable(OpenGL.GL_COLOR_MATERIAL);
             gl.ColorMaterial(OpenGL.GL_FRONT, OpenGL.GL_AMBIENT_AND_DIFFUSE);       // != glMaterial(), bolji jer olaksava def. materijala
                                                                                     // na nivou verteksa
-            gl.Enable(OpenGL.GL_COLOR_MATERIAL);
             //gl.PolygonMode(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_LINE);
 
             sceneCastle.LoadScene();
@@ -175,6 +173,13 @@ namespace AssimpSample
         {
             // Ocisti sadrzaj kolor bafera i bafera dubine
             gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
+
+            //gl.MatrixMode(OpenGL.GL_MODELVIEW);
+            //gl.PushMatrix();
+            gl.LoadIdentity();
+            gl.LookAt(0, 50, 100, 0, 0, 0, 0, 1, 0); 
+            gl.Rotate(m_xRotation, 1.0f, 0.0f, 0.0f);
+            gl.Rotate(m_yRotation, 0.0f, 1.0f, 0.0f);
 
             gl.PushMatrix();
             gl.Translate(0.0f, 0.0f, -m_sceneDistance);
@@ -208,11 +213,10 @@ namespace AssimpSample
             gl.PopMatrix();
 
             gl.PushMatrix();
-            //gl.Scale(100, 100, 100);
             DrawTextInfo(gl);
             gl.PopMatrix();
 
-            gl.MatrixMode(OpenGL.GL_MODELVIEW);         
+            //gl.MatrixMode(OpenGL.GL_MODELVIEW);
 
             gl.PopMatrix();
             // Oznaci kraj iscrtavanja
