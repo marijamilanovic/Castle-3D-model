@@ -158,12 +158,13 @@ namespace AssimpSample
             gl.Enable(OpenGL.GL_DEPTH_TEST);
             gl.Enable(OpenGL.GL_CULL_FACE);
 
+            SetupLighting(gl);                          // ukljucivanje svetla
+
             gl.Enable(OpenGL.GL_NORMALIZE);                                         // normalizacija
             gl.Enable(OpenGL.GL_COLOR_MATERIAL);
             gl.ColorMaterial(OpenGL.GL_FRONT, OpenGL.GL_AMBIENT_AND_DIFFUSE);       // != glMaterial(), bolji jer olaksava def. materijala
                                                                                     // na nivou verteksa
             //gl.PolygonMode(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_LINE);
-
             sceneCastle.LoadScene();
             sceneCastle.Initialize();
             sceneArrow.LoadScene();
@@ -182,6 +183,9 @@ namespace AssimpSample
             gl.LoadIdentity();
             gl.Perspective(60, (double)m_width / (double)m_height, 1, 20000.0);
             gl.LookAt(0f, 30f, 100f, 0f, 0f, 0, 0f, 1f, 0f);
+
+            float[] pos = { 50, 50, 10f, 1.0f};
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_POSITION, pos);
             gl.MatrixMode(OpenGL.GL_MODELVIEW);
 
             gl.PushMatrix();
@@ -208,7 +212,6 @@ namespace AssimpSample
             sceneCastle.Draw();
             gl.PopMatrix();
 
-
             gl.PushMatrix();
             gl.Translate(-40.0f, 0.5f, 40.0f);
             gl.Scale(0.3, 0.3, -0.3);
@@ -226,17 +229,19 @@ namespace AssimpSample
 
 
         private void SetupLighting(OpenGL gl)
-        { //(2.2, 2.9)
+        {
             gl.Enable(OpenGL.GL_LIGHTING);
             gl.Enable(OpenGL.GL_LIGHT0);
 
-            float[] light_yellow = new float[] { 1f, 1f, 0.7f };
-            float[] yellow = new float[] { 1f, 1f, 0f };
+            float[] white = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
+            float[] ambient0 = new float[] { 0.4f, 0.4f, 0.4f, 1.0f };
+            float[] diffuse0 = new float[] { 0.3f, 0.3f, 0.3f, 1.0f };
+            float[] specular0 = new float[] { 0.8f, 0.8f, 0.8f, 1.0f };
 
-            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPOT_CUTOFF, 180.0f);//SVETLO 0 TACKASTI STAVIONARNI IZVOR (2.2)
-            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_AMBIENT, light_yellow);
-            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_DIFFUSE, light_yellow);
-            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPECULAR, light_yellow);
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPOT_CUTOFF, 180.0f);
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_AMBIENT, ambient0);
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_DIFFUSE, diffuse0);
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPECULAR, specular0);
         }
 
 
