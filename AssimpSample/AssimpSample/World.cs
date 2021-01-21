@@ -14,6 +14,8 @@ using SharpGL.SceneGraph.Primitives;
 using SharpGL.SceneGraph.Quadrics;
 using SharpGL.SceneGraph.Core;
 using SharpGL;
+using System.Drawing.Imaging;
+using System.Drawing;
 
 namespace AssimpSample
 {
@@ -58,6 +60,13 @@ namespace AssimpSample
         private int m_height;
 
         private float sceneDistance1 = 100.0f;
+
+
+        private uint[] m_textures = null; //UCITANE TEKSTURE
+        private enum TextureObjects { Grass=0};
+        
+        private readonly int m_textureCount = Enum.GetNames(typeof(TextureObjects)).Length;
+        private string[] m_textureFiles = { ".//textures//grass.jpg" };
 
         #endregion Atributi
 
@@ -128,10 +137,12 @@ namespace AssimpSample
         /// </summary>
         public World(String scenePath, String sceneFileName, int width, int height, OpenGL gl)
         {
+            
             this.sceneCastle = new AssimpScene(scenePath, sceneFileName, gl);
             this.sceneArrow = new AssimpScene(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "3D Models\\Arrow"), "Ballista_Anim.obj", gl);
             this.m_width = width;
             this.m_height = height;
+            m_textures = new uint[m_textureCount]; //PRAVIMO NOVI NIZ U KOJI CE SE TEKSUTRE UCITATI
         }
 
         /// <summary>
@@ -158,12 +169,13 @@ namespace AssimpSample
             gl.Enable(OpenGL.GL_DEPTH_TEST);
             gl.Enable(OpenGL.GL_CULL_FACE);
 
-            SetupLighting(gl);                          // ukljucivanje svetla
-
             gl.Enable(OpenGL.GL_NORMALIZE);                                         // normalizacija
             gl.Enable(OpenGL.GL_COLOR_MATERIAL);
             gl.ColorMaterial(OpenGL.GL_FRONT, OpenGL.GL_AMBIENT_AND_DIFFUSE);       // != glMaterial(), bolji jer olaksava def. materijala
                                                                                     // na nivou verteksa
+            //gl.FrontFace(OpenGL.GL_CCW);
+            EnableTextures(gl);
+            SetupLighting(gl);      // ukljucivanje svetla
             //gl.PolygonMode(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_LINE);
             sceneCastle.LoadScene();
             sceneCastle.Initialize();
@@ -183,9 +195,7 @@ namespace AssimpSample
             gl.LoadIdentity();
             gl.Perspective(60, (double)m_width / (double)m_height, 1, 20000.0);
             gl.LookAt(0f, 30f, 100f, 0f, 0f, 0, 0f, 1f, 0f);
-
-            float[] pos = { 50, 50, 10f, 1.0f};
-            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_POSITION, pos);
+            gl.Enable(OpenGL.GL_TEXTURE_2D);
             gl.MatrixMode(OpenGL.GL_MODELVIEW);
 
             gl.PushMatrix();
@@ -228,6 +238,30 @@ namespace AssimpSample
         }
 
 
+        private void EnableTextures(OpenGL gl)
+        {
+            gl.Enable(OpenGL.GL_TEXTURE_2D);
+            gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_MODULATE); //STAPANJE = MODULATE (2.3)
+            gl.GenTextures(m_textureCount, m_textures);
+            for (int i = 0; i < m_textureCount; ++i)
+            {
+                gl.BindTexture(OpenGL.GL_TEXTURE_2D, m_textures[i]);
+                Bitmap image = new Bitmap(m_textureFiles[i]);
+                image.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                Rectangle rect = new Rectangle(0, 0, image.Width, image.Height);
+                BitmapData imageData = image.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                gl.TexImage2D(OpenGL.GL_TEXTURE_2D, 0, (int)OpenGL.GL_RGBA8, imageData.Width, imageData.Height, 0,
+                            OpenGL.GL_BGRA, OpenGL.GL_UNSIGNED_BYTE, imageData.Scan0);
+
+                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MIN_FILTER, OpenGL.GL_LINEAR); 
+                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MAG_FILTER, OpenGL.GL_LINEAR);
+                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_WRAP_S, OpenGL.GL_REPEAT);
+                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_WRAP_T, OpenGL.GL_REPEAT);
+                image.UnlockBits(imageData);
+                image.Dispose();
+            }
+        }
+
         private void SetupLighting(OpenGL gl)
         {
             gl.Enable(OpenGL.GL_LIGHTING);
@@ -242,22 +276,39 @@ namespace AssimpSample
             gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_AMBIENT, ambient0);
             gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_DIFFUSE, diffuse0);
             gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPECULAR, specular0);
+
+            //float[] spot_direction = { -1.0f, -1.0f, 0.0f };
+            //gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPOT_DIRECTION, spot_direction);
+
+            //float[] pos = { 0.5f, 0.5f, 1f, 0.0f };
+            //gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_POSITION, pos);
         }
 
 
         private void DrawFloor(OpenGL gl)
         {
+            gl.MatrixMode(OpenGL.GL_TEXTURE);
+            gl.PushMatrix();
+            gl.Scale(8.0f, 8.0f, 8.0f);
+            gl.BindTexture(OpenGL.GL_TEXTURE_2D, m_textures[(int)TextureObjects.Grass]);
             gl.Begin(OpenGL.GL_QUADS);
             gl.Color(0.1f, 0.3f, 0.1f);
             gl.Normal(0f, 1f, 0f);                                  // normala za podlogu
-
+            gl.TexCoord(0.0f, 0.0f);
             gl.Vertex(-50f, 0f, 50f);
+            gl.TexCoord(0.0f, 1.0f);
             gl.Vertex(50f, 0f, 50f);
+            gl.TexCoord(1.0f, 1.0f);
             gl.Vertex(50f, 0f, -50f);
+            gl.TexCoord(1.0f, 0.0f);
             gl.Vertex(-50f, 0f, -50f);
 
             gl.End();
-            gl.LoadIdentity();      
+            gl.PopMatrix();
+            gl.MatrixMode(OpenGL.GL_MODELVIEW);
+            gl.Disable(OpenGL.GL_TEXTURE_2D);
+            gl.LoadIdentity();
+
         }
 
         private void DrawPath(OpenGL gl)
@@ -278,7 +329,7 @@ namespace AssimpSample
         private void DrawWalls(OpenGL gl)
         {
             gl.PushMatrix();
-            gl.Color(0.5f, 0.7f, 0.5f);
+            gl.Color(0.1f, 0.1f, 0.1f);
             gl.Translate(-50.0f, 0.0f, 0.0f);
             gl.Scale(0.1, 20, 50);
             gl.Translate(-1, 1, 0);
