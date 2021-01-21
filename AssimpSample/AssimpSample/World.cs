@@ -63,10 +63,10 @@ namespace AssimpSample
 
 
         private uint[] m_textures = null; //UCITANE TEKSTURE
-        private enum TextureObjects { Grass=0};
+        private enum TextureObjects { Grass=0, MetalFence, PavedMud};
         
         private readonly int m_textureCount = Enum.GetNames(typeof(TextureObjects)).Length;
-        private string[] m_textureFiles = { ".//textures//grass.jpg" };
+        private string[] m_textureFiles = { ".//textures//grass.jpg", ".//textures//metalFence.jpeg", ".//textures//pavedMud.jpeg" };
 
         #endregion Atributi
 
@@ -208,11 +208,13 @@ namespace AssimpSample
             DrawFloor(gl);
             gl.PopMatrix();
 
+            gl.Enable(OpenGL.GL_TEXTURE_2D);
             gl.PushMatrix();
             gl.Translate(0.0f, 0.3f, 0.0f);
             DrawPath(gl);
             gl.PopMatrix();
 
+            gl.Enable(OpenGL.GL_TEXTURE_2D);
             gl.PushMatrix();
             DrawWalls(gl);
             gl.PopMatrix();
@@ -313,27 +315,42 @@ namespace AssimpSample
 
         private void DrawPath(OpenGL gl)
         {
+            gl.MatrixMode(OpenGL.GL_TEXTURE);
+            gl.PushMatrix();
+            gl.Scale(1.3f, 1.0, 1.0f);
+            gl.BindTexture(OpenGL.GL_TEXTURE_2D, m_textures[(int)TextureObjects.PavedMud]);
             gl.Begin(OpenGL.GL_QUADS);
-            gl.Color(0.1f, 0.1f, 0.1f);
+            gl.Color(0.7f, 0.5f, 0.5f);
             gl.Normal(0f, 1f, 0f);                                  // normala za stazu
 
+            gl.TexCoord(0.0f, 0.0f);
             gl.Vertex(-5f, 0f, 50f);
+            gl.TexCoord(0.0f, 1.0f);
             gl.Vertex(5f, 0f, 50f);
+            gl.TexCoord(1.0f, 1.0f);
             gl.Vertex(5f, 0f, 20f);
+            gl.TexCoord(1.0f, 0.0f);
             gl.Vertex(-5f, 0f, 20f);
 
             gl.End();
+            gl.PopMatrix();
+            gl.MatrixMode(OpenGL.GL_MODELVIEW);
+            gl.Disable(OpenGL.GL_TEXTURE_2D);
             gl.LoadIdentity();
+
         }
 
         private void DrawWalls(OpenGL gl)
         {
             gl.PushMatrix();
-            gl.Color(0.1f, 0.1f, 0.1f);
+            gl.BindTexture(OpenGL.GL_TEXTURE_2D, m_textures[(int)TextureObjects.MetalFence]);
+            gl.Color(0.5f, 0.5f, 0.5f);
+
             gl.Translate(-50.0f, 0.0f, 0.0f);
             gl.Scale(0.1, 20, 50);
             gl.Translate(-1, 1, 0);
             Cube leftWall = new Cube();
+            gl.Normal(0f, 1f, 0f);
             leftWall.Render(gl, SharpGL.SceneGraph.Core.RenderMode.Render);
             gl.PopMatrix();
 
@@ -342,8 +359,12 @@ namespace AssimpSample
             gl.Scale(0.1, 20, 50);
             gl.Translate(-1, 1, 0);
             Cube rightWall = new Cube();
+            gl.Normal(0f, 1f, 0f);
             rightWall.Render(gl, SharpGL.SceneGraph.Core.RenderMode.Render);
             gl.PopMatrix();
+
+            gl.Disable(OpenGL.GL_TEXTURE_2D);
+            gl.LoadIdentity();
         }
 
         // ORTOGONALNA PROJEKCIJA - svi objekti koji su istih dimenzija prikazuju se u istoj velicini bez obzira gde se nalaze --- gluOrtho()
