@@ -16,6 +16,7 @@ using SharpGL.SceneGraph.Core;
 using SharpGL;
 using System.Drawing.Imaging;
 using System.Drawing;
+using System.Windows.Threading;
 
 namespace AssimpSample
 {
@@ -32,12 +33,13 @@ namespace AssimpSample
         ///	 Scena koja se prikazuje.
         /// </summary>
         private AssimpScene sceneCastle;
+        private AssimpScene sceneArrowMachine;
         private AssimpScene sceneArrow;
 
         /// <summary>
         ///	 Ugao rotacije sveta oko X ose.
         /// </summary>
-        private float m_xRotation = 0.0f;
+        private float m_xRotation = 10.0f;
 
         /// <summary>
         ///	 Ugao rotacije sveta oko Y ose.
@@ -47,7 +49,7 @@ namespace AssimpSample
         /// <summary>
         ///	 Udaljenost scene od kamere.
         /// </summary>
-        private float m_sceneDistance = 0.0f;
+        private float m_sceneDistance = 150.0f;
 
         /// <summary>
         ///	 Sirina OpenGL kontrole u pikselima.
@@ -59,16 +61,29 @@ namespace AssimpSample
         /// </summary>
         private int m_height;
 
-        private float sceneDistance1 = 100.0f;
-
 
         private uint[] m_textures = null; //UCITANE TEKSTURE
-        private enum TextureObjects { Grass=0, MetalFence, PavedMud};
-        
+        private enum TextureObjects { Grass=0, MetalFence, PavedMud, CastleWalls};
         private readonly int m_textureCount = Enum.GetNames(typeof(TextureObjects)).Length;
-        private string[] m_textureFiles = { ".//textures//grass.jpg", ".//textures//metalFence.jpeg", ".//textures//pavedMud.jpeg" };
+        private string[] m_textureFiles = { ".//textures//grass.jpg", 
+                                            ".//textures//metalFence.jpeg", 
+                                            ".//textures//pavedMud.jpeg", 
+                                            ".//textures//Castle Exterior Texture Bump.jpg" };
 
+
+        //ONO STO SE MENJA SLAJDERIMA
+        private float m_scaleArrow = 1f; //velicina strele
+        private int m_leftWall = 0; // rotacija levog
+        private int m_rigthWall = 0; // pomeranje desnog
+
+        //ANIMACIJA
+        private bool animation = false;
+        private DispatcherTimer timer;
+        private float worldRotationY = 0;//rotacija kod animacije
+        private float worldZ =0;// koristi se kod pomeranja iz zamka do mesta gde se gleda kako strele lete
+        private float arrowZ=0, arrowY = 0;//za pomeranje strela
         #endregion Atributi
+
 
         #region Properties
 
@@ -87,7 +102,7 @@ namespace AssimpSample
         public float RotationX
         {
             get { return m_xRotation; }
-            set { m_xRotation = value; if (m_xRotation < 4) m_xRotation = 4; if (m_xRotation > 60) m_xRotation = 60; }
+            set {if(value>0 && value<90) m_xRotation = value;  }
         }
 
         /// <summary>
@@ -105,7 +120,7 @@ namespace AssimpSample
         public float SceneDistance
         {
             get { return m_sceneDistance; }
-            set { m_sceneDistance = value; }
+            set { if(value>0) m_sceneDistance = value; }
         }
 
         /// <summary>
@@ -126,8 +141,27 @@ namespace AssimpSample
             set { m_height = value; }
         }
 
-        public float SceneDistance1 { get => sceneDistance1; set => sceneDistance1 = value; }
+        public int RightWall {
+            get { return m_rigthWall; }
+            set { m_rigthWall = value; }
+        }
 
+
+        public int LeftWall {
+            get { return m_leftWall; }
+            set { m_leftWall = value; }
+        }
+
+
+        public float ScaleArrow {
+            get { return m_scaleArrow; }
+            set { m_scaleArrow = value; }
+        }
+
+        public Boolean Animation {
+            get { return animation; }
+            set { animation = value; }
+        }
         #endregion Properties
 
         #region Konstruktori
@@ -137,12 +171,12 @@ namespace AssimpSample
         /// </summary>
         public World(String scenePath, String sceneFileName, int width, int height, OpenGL gl)
         {
-            
-            this.sceneCastle = new AssimpScene(scenePath, sceneFileName, gl);
-            this.sceneArrow = new AssimpScene(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "3D Models\\Arrow"), "Ballista_Anim.obj", gl);
+            this.sceneCastle = new AssimpScene(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "3D Models"), "Castle.3DS", gl);
+            this.sceneArrow = new AssimpScene(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "3D Models"), "flechaventa.obj", gl);
+            this.sceneArrowMachine = new AssimpScene(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "3D Models"), "Ballista_Anim.obj", gl);
             this.m_width = width;
             this.m_height = height;
-            m_textures = new uint[m_textureCount]; //PRAVIMO NOVI NIZ U KOJI CE SE TEKSUTRE UCITATI
+            m_textures = new uint[m_textureCount]; //pravimo novi niz u koji ce se tekstura ucitati
         }
 
         /// <summary>
@@ -169,65 +203,133 @@ namespace AssimpSample
             gl.Enable(OpenGL.GL_DEPTH_TEST);
             gl.Enable(OpenGL.GL_CULL_FACE);
 
-            gl.Enable(OpenGL.GL_NORMALIZE);                                         // normalizacija
+            gl.Enable(OpenGL.GL_NORMALIZE);                                         
             gl.Enable(OpenGL.GL_COLOR_MATERIAL);
             gl.ColorMaterial(OpenGL.GL_FRONT, OpenGL.GL_AMBIENT_AND_DIFFUSE);       // != glMaterial(), bolji jer olaksava def. materijala
                                                                                     // na nivou verteksa
             //gl.FrontFace(OpenGL.GL_CCW);
             EnableTextures(gl);
-            SetupLighting(gl);      // ukljucivanje svetla
+            SetupLighting(gl);     
             //gl.PolygonMode(OpenGL.GL_FRONT_AND_BACK, OpenGL.GL_LINE);
             sceneCastle.LoadScene();
             sceneCastle.Initialize();
+            sceneArrowMachine.LoadScene();
+            sceneArrowMachine.Initialize();
             sceneArrow.LoadScene();
             sceneArrow.Initialize();
         }
 
+
+
+        public void startAnimation() {
+            ///iskluci interfjes
+            ///                    
+            MainWindow win = (MainWindow)System.Windows.Application.Current.MainWindow;
+
+            win.slider.IsEnabled = win.slider2.IsEnabled = win.slider3.IsEnabled = win.c1.IsEnabled = win.c2.IsEnabled = false;
+            worldRotationY = 180; //u pocetku je okrenut za 180 ceo svet 
+            worldZ = 40;// pozicija u zamku
+            timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromMilliseconds(30);
+            timer.Tick += new EventHandler(animate);//na svakih 30ms poziva ovu metoud
+            timer.Start();
+            animation = true;
+            arrowZ = -25;
+            arrowY = 35;
+        }
+
+        private void animate(object sender, EventArgs e) {
+            if (worldZ != -40)//pomeraj po z osi dok kraj staze ne bude u centru
+                worldZ--;
+            else if (worldRotationY != 0)//nakon toga rotiraj tako da se vidi zamak
+                worldRotationY -= 5;
+            else {
+                arrowZ+=2;
+                arrowY -= 1.19f;
+                if (arrowZ > 40) {//kraj
+                    timer.Stop();
+                    animation = false;
+                    worldRotationY = 180;//da se strele ne crtaju
+                    MainWindow win = (MainWindow)System.Windows.Application.Current.MainWindow;
+                    ///ukljuci interfjes
+                    win.slider.IsEnabled = win.slider2.IsEnabled = win.slider3.IsEnabled = win.c1.IsEnabled = win.c2.IsEnabled = true;
+                }
+            }
+        }
+
+
+
+
         /// <summary>
         ///  Iscrtavanje OpenGL kontrole.
         /// </summary>
-        public void Draw(OpenGL gl)
-        {
+        public void Draw(OpenGL gl) {
             // Ocisti sadrzaj kolor bafera i bafera dubine
             gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
 
             gl.MatrixMode(OpenGL.GL_PROJECTION);
             gl.LoadIdentity();
             gl.Perspective(60, (double)m_width / (double)m_height, 1, 20000.0);
-            gl.LookAt(0f, 30f, 100f, 0f, 0f, 0, 0f, 1f, 0f);
-            gl.Enable(OpenGL.GL_TEXTURE_2D);
             gl.MatrixMode(OpenGL.GL_MODELVIEW);
 
             gl.PushMatrix();
-            gl.Translate(0.0f, 0.0f, -m_sceneDistance);
-            gl.Rotate(m_xRotation, 1.0f, 0.0f, 0.0f);
-            gl.Rotate(m_yRotation, 0.0f, 1.0f, 0.0f);
+            // gl.Translate(0.0f, 0.0f, -m_sceneDistance);
+            if (!animation) {
+                gl.LookAt(0f, 0f, m_sceneDistance, 0f, 0f, 0, 0f, 1f, 0f);
+
+                gl.Rotate(m_xRotation, 1.0f, 0.0f, 0.0f);
+                gl.Rotate(m_yRotation, 0.0f, 1.0f, 0.0f);
+            }
+            else {                                              //kamera miruje u centru, gleda u - smeru z ose, a ceo svet se vrti i pomera oko nje
+                gl.LookAt(0f, 5f, 0f, 0f,5f, -1, 0f, 1f, 0f);
+                gl.Rotate(0, worldRotationY, 0);
+
+                gl.Translate(0, 0, worldZ);                     //a ceo svet se pomera i rotira
+
+                if (worldRotationY == 0) {                      //ako je okrenuto treba strele da se ispaljuju
+                    for (int i = 0; i < 11; i++) {
+                        gl.PushMatrix();
+                        gl.Translate(8+-2*i, arrowY, arrowZ);
+                        gl.Scale(m_scaleArrow, m_scaleArrow, m_scaleArrow);
+                        gl.Rotate(15, 90, 0);
+                        sceneArrow.Draw();
+                        gl.PopMatrix();
+                    }  
+                }
+            }
+
+            //REFLEKTOR
+            float[] spot_direction = { 0.0f, -1.0f, 0.0f };         //na dole sija
+            gl.Light(OpenGL.GL_LIGHT1, OpenGL.GL_SPOT_DIRECTION, spot_direction);
+
+            float[] pos = { 0f, 60f, -20f, 1.0f };                  //iznad zamka
+            gl.Light(OpenGL.GL_LIGHT1, OpenGL.GL_POSITION, pos);
+
 
             gl.PushMatrix();
             gl.Translate(0.0f, 0.2f, 0.0f);
             DrawFloor(gl);
             gl.PopMatrix();
 
-            gl.Enable(OpenGL.GL_TEXTURE_2D);
             gl.PushMatrix();
             gl.Translate(0.0f, 0.3f, 0.0f);
             DrawPath(gl);
             gl.PopMatrix();
+            gl.BindTexture(OpenGL.GL_TEXTURE_2D, m_textures[(int)TextureObjects.CastleWalls]);
 
-            gl.Enable(OpenGL.GL_TEXTURE_2D);
             gl.PushMatrix();
             DrawWalls(gl);
             gl.PopMatrix();
 
             gl.PushMatrix();
-            gl.Translate(0.0f, 0.3f, 0.0f);
+            gl.Translate(0.0f, 0.0f, -20.0f);
             sceneCastle.Draw();
             gl.PopMatrix();
 
             gl.PushMatrix();
-            gl.Translate(-40.0f, 0.5f, 40.0f);
+            gl.Translate(0.0f, 30.0f, -25.0f);
             gl.Scale(0.3, 0.3, -0.3);
-            sceneArrow.Draw();
+            sceneArrowMachine.Draw();
             gl.PopMatrix();
 
             gl.PushMatrix();
@@ -243,7 +345,7 @@ namespace AssimpSample
         private void EnableTextures(OpenGL gl)
         {
             gl.Enable(OpenGL.GL_TEXTURE_2D);
-            gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_MODULATE); //STAPANJE = MODULATE (2.3)
+            gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_MODULATE);
             gl.GenTextures(m_textureCount, m_textures);
             for (int i = 0; i < m_textureCount; ++i)
             {
@@ -266,24 +368,31 @@ namespace AssimpSample
 
         private void SetupLighting(OpenGL gl)
         {
-            gl.Enable(OpenGL.GL_LIGHTING);
-            gl.Enable(OpenGL.GL_LIGHT0);
+            gl.Enable(OpenGL.GL_LIGHTING);                  //ukljuci svetla
+            gl.Enable(OpenGL.GL_LIGHT0);                    //ukljuci svetlo 0, bice ono stacinarno
 
-            float[] white = new float[] { 1.0f, 1.0f, 1.0f, 1.0f };
             float[] ambient0 = new float[] { 0.4f, 0.4f, 0.4f, 1.0f };
             float[] diffuse0 = new float[] { 0.3f, 0.3f, 0.3f, 1.0f };
             float[] specular0 = new float[] { 0.8f, 0.8f, 0.8f, 1.0f };
 
-            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPOT_CUTOFF, 180.0f);
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPOT_CUTOFF, 180.0f);      //tackasto == cutoff je 180
             gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_AMBIENT, ambient0);
             gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_DIFFUSE, diffuse0);
             gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPECULAR, specular0);
 
-            //float[] spot_direction = { -1.0f, -1.0f, 0.0f };
-            //gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_SPOT_DIRECTION, spot_direction);
+            float[] pos = { -100,80, 0f, 1.0f };
+            gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_POSITION, pos);            //pozicija je uvek ova, trans. ne uticu na nju
 
-            //float[] pos = { 0.5f, 0.5f, 1f, 0.0f };
-            //gl.Light(OpenGL.GL_LIGHT0, OpenGL.GL_POSITION, pos);
+            gl.Enable(OpenGL.GL_LIGHT1);                                    //ukljuci svetlo1, reflektor
+            gl.Light(OpenGL.GL_LIGHT1, OpenGL.GL_SPOT_CUTOFF, 45.0f);       //cutoff je 45
+
+            float[] ambient1 = new float[] { 0.3f, 0.3f, 0.3f, 1.0f };
+            float[] diffuse1 = new float[] { 0.5f, 0.5f, 0.5f, 1.0f };
+            float[] specular1 = new float[] { 1f, 1f, 1f, 1.0f };
+            
+            gl.Light(OpenGL.GL_LIGHT1, OpenGL.GL_AMBIENT, ambient1);
+            gl.Light(OpenGL.GL_LIGHT1, OpenGL.GL_DIFFUSE, diffuse1);
+            gl.Light(OpenGL.GL_LIGHT1, OpenGL.GL_SPECULAR, specular1);
         }
 
 
@@ -296,19 +405,19 @@ namespace AssimpSample
             gl.Begin(OpenGL.GL_QUADS);
             gl.Color(0.1f, 0.3f, 0.1f);
             gl.Normal(0f, 1f, 0f);                                  // normala za podlogu
+
             gl.TexCoord(0.0f, 0.0f);
-            gl.Vertex(-50f, 0f, 50f);
+            gl.Vertex(-80f, 0f, 52f);
             gl.TexCoord(0.0f, 1.0f);
-            gl.Vertex(50f, 0f, 50f);
+            gl.Vertex(80f, 0f, 52f);
             gl.TexCoord(1.0f, 1.0f);
-            gl.Vertex(50f, 0f, -50f);
+            gl.Vertex(80f, 0f, -52f);
             gl.TexCoord(1.0f, 0.0f);
-            gl.Vertex(-50f, 0f, -50f);
+            gl.Vertex(-80f, 0f, -52f);
 
             gl.End();
             gl.PopMatrix();
             gl.MatrixMode(OpenGL.GL_MODELVIEW);
-            gl.Disable(OpenGL.GL_TEXTURE_2D);
             gl.LoadIdentity();
 
         }
@@ -317,7 +426,7 @@ namespace AssimpSample
         {
             gl.MatrixMode(OpenGL.GL_TEXTURE);
             gl.PushMatrix();
-            gl.Scale(1.3f, 1.0, 1.0f);
+            gl.Scale(5f, 1.0, 1.0f);
             gl.BindTexture(OpenGL.GL_TEXTURE_2D, m_textures[(int)TextureObjects.PavedMud]);
             gl.Begin(OpenGL.GL_QUADS);
             gl.Color(0.7f, 0.5f, 0.5f);
@@ -328,42 +437,40 @@ namespace AssimpSample
             gl.TexCoord(0.0f, 1.0f);
             gl.Vertex(5f, 0f, 50f);
             gl.TexCoord(1.0f, 1.0f);
-            gl.Vertex(5f, 0f, 20f);
+            gl.Vertex(5f, 0f, -20f);
             gl.TexCoord(1.0f, 0.0f);
-            gl.Vertex(-5f, 0f, 20f);
+            gl.Vertex(-5f, 0f, -20f);
 
             gl.End();
             gl.PopMatrix();
             gl.MatrixMode(OpenGL.GL_MODELVIEW);
-            gl.Disable(OpenGL.GL_TEXTURE_2D);
             gl.LoadIdentity();
-
         }
 
         private void DrawWalls(OpenGL gl)
         {
             gl.PushMatrix();
             gl.BindTexture(OpenGL.GL_TEXTURE_2D, m_textures[(int)TextureObjects.MetalFence]);
-            gl.Color(0.5f, 0.5f, 0.5f);
+            gl.Color(1f, 1f, 1f);
 
             gl.Translate(-50.0f, 0.0f, 0.0f);
+            gl.Rotate(0, m_leftWall, 0);                                    //rotira se levi
             gl.Scale(0.1, 20, 50);
             gl.Translate(-1, 1, 0);
             Cube leftWall = new Cube();
-            gl.Normal(0f, 1f, 0f);
+            //gl.Normal(0f, 1f, 0f);
             leftWall.Render(gl, SharpGL.SceneGraph.Core.RenderMode.Render);
             gl.PopMatrix();
 
             gl.PushMatrix();
-            gl.Translate(50.0f, 0.0f, 0.0f);
+            gl.Translate(50.0f+m_rigthWall, 0.0f, 0.0f);                    //translira se desni
             gl.Scale(0.1, 20, 50);
             gl.Translate(-1, 1, 0);
             Cube rightWall = new Cube();
-            gl.Normal(0f, 1f, 0f);
+            //gl.Normal(0f, 1f, 0f);
             rightWall.Render(gl, SharpGL.SceneGraph.Core.RenderMode.Render);
             gl.PopMatrix();
 
-            gl.Disable(OpenGL.GL_TEXTURE_2D);
             gl.LoadIdentity();
         }
 
@@ -372,6 +479,7 @@ namespace AssimpSample
 
         private void DrawTextInfo(OpenGL gl)
         {
+            gl.Enable(OpenGL.GL_LIGHTING);
             gl.MatrixMode(OpenGL.GL_PROJECTION);
             gl.PushMatrix();
             gl.Viewport(m_width/2, 0, m_width/2, m_height/2);
@@ -411,6 +519,7 @@ namespace AssimpSample
             gl.PopMatrix();
             gl.MatrixMode(OpenGL.GL_MODELVIEW);
 
+            gl.Disable(OpenGL.GL_LIGHTING);
         }
 
 

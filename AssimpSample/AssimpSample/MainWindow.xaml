@@ -4,11 +4,37 @@
         Title="SharpGL WPF Application" Height="350" Width="525" 
         xmlns:sharpGL="clr-namespace:SharpGL.WPF;assembly=SharpGL.WPF" KeyDown="Window_KeyDown">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30*" MaxHeight="30">
+
+            </RowDefinition>
+            <RowDefinition Height="289*">
+
+            </RowDefinition>
+        </Grid.RowDefinitions>
+
         <!-- The OpenGL control provides a OpenGL drawing surface. -->
         <sharpGL:OpenGLControl 
-            Name="openGLControl" OpenGLDraw="openGLControl_OpenGLDraw" 
+            Name="openGLControl" OpenGLDraw="openGLControl_OpenGLDraw" Grid.Row="1"
             OpenGLInitialized="openGLControl_OpenGLInitialized" Resized="openGLControl_Resized"
-            DrawFPS="True" RenderContextType="FBO" FrameRate="10" Margin="0,0,0.4,-0.2"/>
+            DrawFPS="True" RenderContextType="FBO" FrameRate="30" />
+        <ToolBar x:Name="toolBar" HorizontalAlignment="Stretch"  Grid.Row="0" VerticalAlignment="Top"  Height="30" MaxHeight="30">
+
+            <Label x:Name="label" Content="Transliranje desnog zaštitnog zida" Height="25" VerticalAlignment="Top"/>
+            <Slider x:Name="slider" Height="25" VerticalAlignment="Top" Width="100" ValueChanged="slider_ValueChanged" Minimum="-18" Maximum="28" Value="0" LargeChange="1" />
+            <Label x:Name="label2" Content="Rotiranje levog zaštitnog zida" Height="25" VerticalAlignment="Top"/>
+            <Slider x:Name="slider2" Height="25" VerticalAlignment="Top" Width="100" ValueChanged="slider2_ValueChanged" Minimum="-30" Maximum="30" Value="0" LargeChange="1" />
+
+            <Label x:Name="label3" Content="Faktor skaliranja strele" Height="25" VerticalAlignment="Top"/>
+            <Slider x:Name="slider3" Height="25" VerticalAlignment="Top" Width="100" ValueChanged="slider3_ValueChanged" Minimum="0.6" Maximum="2.1" Value="1" LargeChange="0.1" />
+
+
+            <StackPanel Height="15" Orientation="Horizontal" >
+                <CheckBox x:Name="c1"   Checked="CheckBox_Checked" IsChecked="True" Unchecked="CheckBox_Checked">Tačkasti izvor</CheckBox>
+                <CheckBox x:Name="c2"    IsThreeState="False"  Checked="CheckBox_Checked2" IsChecked="True"  Unchecked="CheckBox_Checked2">Reflektorski izvor</CheckBox>
+            </StackPanel>
+
+        </ToolBar>
 
     </Grid>
 </Window>
