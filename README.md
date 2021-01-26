@@ -1,6 +1,6 @@
 # Computer graphics assignment
 *Faculty of Technical Sciences, Novi Sad*
-##Technologies
+## Technologies
 - WPF for .NET Framework
 - SharpGl (OpenGl)
 - Assimp
