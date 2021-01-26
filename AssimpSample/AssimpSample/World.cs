@@ -203,10 +203,15 @@ namespace AssimpSample
             gl.Enable(OpenGL.GL_DEPTH_TEST);
             gl.Enable(OpenGL.GL_CULL_FACE);
 
-            gl.Enable(OpenGL.GL_NORMALIZE);                                         
-            gl.Enable(OpenGL.GL_COLOR_MATERIAL);
+            gl.Enable(OpenGL.GL_NORMALIZE);                                         // definisu se za svako teme objekta; normale su neophodne za proracun osvetljenosti nekog poligona                                
+            gl.Enable(OpenGL.GL_COLOR_MATERIAL);    
             gl.ColorMaterial(OpenGL.GL_FRONT, OpenGL.GL_AMBIENT_AND_DIFFUSE);       // != glMaterial(), bolji jer olaksava def. materijala
                                                                                     // na nivou verteksa
+
+                                                                                    // Ambijentalno - uniformno/const, ne dolazi iz nekog pravca (sunce)
+                                                                                    // Difuzno - dolazi iz nekog pravca, sv. se prelama i rasipa na povrsini (lampa)
+                                                                                    // Spekulatro - dolazi iz pravca, mnogo ostriji ugao refleksije i nema rasipanja (sjaj)
+                                                                                    // Emisiona - boja koju materijal isijava
             //gl.FrontFace(OpenGL.GL_CCW);
             EnableTextures(gl);
             SetupLighting(gl);     
@@ -275,7 +280,7 @@ namespace AssimpSample
             gl.PushMatrix();
             // gl.Translate(0.0f, 0.0f, -m_sceneDistance);
             if (!animation) {
-                gl.LookAt(0f, 0f, m_sceneDistance, 0f, 0f, 0, 0f, 1f, 0f);
+                gl.LookAt(0f, 0f, m_sceneDistance, 0f, 0f, 0, 0f, 1f, 0f);          // pozicioniranje kamere - def.pozicije kamere, smer (tacka) gledanja kamere, orjentacija kamere
 
                 gl.Rotate(m_xRotation, 1.0f, 0.0f, 0.0f);
                 gl.Rotate(m_yRotation, 0.0f, 1.0f, 0.0f);
@@ -298,7 +303,7 @@ namespace AssimpSample
                 }
             }
 
-            //REFLEKTOR
+            //Reflektorski sv. izvor - snop sv. zraka; 2 slabljenja (udaljenost od objekta i srediste snopa ka njegovom obodu) -- pr. automobilski far
             float[] spot_direction = { 0.0f, -1.0f, 0.0f };         //na dole sija
             gl.Light(OpenGL.GL_LIGHT1, OpenGL.GL_SPOT_DIRECTION, spot_direction);
 
@@ -346,21 +351,21 @@ namespace AssimpSample
         {
             gl.Enable(OpenGL.GL_TEXTURE_2D);
             gl.TexEnv(OpenGL.GL_TEXTURE_ENV, OpenGL.GL_TEXTURE_ENV_MODE, OpenGL.GL_MODULATE);
-            gl.GenTextures(m_textureCount, m_textures);
+            gl.GenTextures(m_textureCount, m_textures);                             // kreira N tekstura odjednom
             for (int i = 0; i < m_textureCount; ++i)
             {
-                gl.BindTexture(OpenGL.GL_TEXTURE_2D, m_textures[i]);
+                gl.BindTexture(OpenGL.GL_TEXTURE_2D, m_textures[i]);                // kreirana tekstura se pridruzuje objektu
                 Bitmap image = new Bitmap(m_textureFiles[i]);
                 image.RotateFlip(RotateFlipType.RotateNoneFlipY);
                 Rectangle rect = new Rectangle(0, 0, image.Width, image.Height);
                 BitmapData imageData = image.LockBits(rect, System.Drawing.Imaging.ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                 gl.TexImage2D(OpenGL.GL_TEXTURE_2D, 0, (int)OpenGL.GL_RGBA8, imageData.Width, imageData.Height, 0,
-                            OpenGL.GL_BGRA, OpenGL.GL_UNSIGNED_BYTE, imageData.Scan0);
+                            OpenGL.GL_BGRA, OpenGL.GL_UNSIGNED_BYTE, imageData.Scan0);              // ucitavanje 2D tekstura, mipmapping level je 0 
 
-                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MIN_FILTER, OpenGL.GL_LINEAR); 
-                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MAG_FILTER, OpenGL.GL_LINEAR);
-                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_WRAP_S, OpenGL.GL_REPEAT);
-                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_WRAP_T, OpenGL.GL_REPEAT);
+                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MIN_FILTER, OpenGL.GL_LINEAR);      // filtriranje tekstura, kada se tekstura mora smanjiti da bi bila pridruzena objektu
+                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MAG_FILTER, OpenGL.GL_LINEAR);      // filtriranje tekstura, kada se tekstura mora povecati kako bi bila pridruzena objektu
+                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_WRAP_S, OpenGL.GL_REPEAT);          // definise da li ce se tekstura ponavljati po s-osi i kojim tekselima ce biti realizovano ponavljanje
+                gl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_WRAP_T, OpenGL.GL_REPEAT);          // definise da li ce se tekstura ponavljati po t-osi i kojim tekselima ce biti realizovano ponavljanje
                 image.UnlockBits(imageData);
                 image.Dispose();
             }
@@ -368,6 +373,7 @@ namespace AssimpSample
 
         private void SetupLighting(OpenGL gl)
         {
+            // Tackasti sv. izvor - postojanje sv. zraka koji se rasejavaju na sve strane; cutoff je 180; slabljenje je udaljenost od objekta -- pr. sijalica
             gl.Enable(OpenGL.GL_LIGHTING);                  //ukljuci svetla
             gl.Enable(OpenGL.GL_LIGHT0);                    //ukljuci svetlo 0, bice ono stacinarno
 
@@ -403,7 +409,7 @@ namespace AssimpSample
             gl.Scale(8.0f, 8.0f, 8.0f);
             gl.BindTexture(OpenGL.GL_TEXTURE_2D, m_textures[(int)TextureObjects.Grass]);
             gl.Begin(OpenGL.GL_QUADS);
-            gl.Color(0.1f, 0.3f, 0.1f);
+            gl.Color(0.1f, 0.3f, 0.1f);                             // boja se uvek odnosi na tacku -- glShadeModel() moze biti FLAT ili SMOOTH
             gl.Normal(0f, 1f, 0f);                                  // normala za podlogu
 
             gl.TexCoord(0.0f, 0.0f);
